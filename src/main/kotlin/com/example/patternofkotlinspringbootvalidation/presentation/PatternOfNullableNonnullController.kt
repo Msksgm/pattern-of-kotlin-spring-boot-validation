@@ -3,6 +3,7 @@ package com.example.patternofkotlinspringbootvalidation.presentation
 import com.example.patternofkotlinspringbootvalidation.presentation.model.Article
 import com.example.patternofkotlinspringbootvalidation.presentation.model.NewNonNullArticleRequest
 import com.example.patternofkotlinspringbootvalidation.presentation.model.NewNullableArticleRequest
+import com.example.patternofkotlinspringbootvalidation.presentation.model.NewNullableSetNotNullArticleRequest
 import com.example.patternofkotlinspringbootvalidation.presentation.model.SingleArticleResponse
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
@@ -86,6 +87,41 @@ class PatternOfNullableNonnullController {
                     title = nonNullValidatedTitle,
                     body = nonNullValidatedBody,
                     description = nonNullValidatedDescription
+                )
+            ),
+            HttpStatus.OK
+        )
+    }
+
+    /**
+     * パターン 3 : null 許容型で取得したプロパティをセッターで null 非許容型にする
+     *
+     * メリット
+     * - null だったときのバリデーションエラーのレスポンスをわかりやすくできる
+     * - コントローラに null 非許容型の知識が漏れない
+     * - `!!` は model 側で必要になるが、コントローラに記述するよりは許容しやすく、設定もわかりやすい
+     *
+     * デメリット
+     * - 結局 `!!` が必要になる
+     * - セッターで設定するプロパティ名についてルールを決める必要がある
+     * - model 側で全体的な記述量が増える
+     *
+     */
+    @PostMapping(
+        value = ["/nullable-set-not-null-article-model"],
+        produces = [MediaType.APPLICATION_JSON_VALUE],
+        consumes = [MediaType.APPLICATION_JSON_VALUE],
+    )
+    fun nullableSetNotNullModel(
+        @Valid @RequestBody newNullableSetNotNullArticleRequest: NewNullableSetNotNullArticleRequest
+    ): ResponseEntity<SingleArticleResponse> {
+        return ResponseEntity(
+            SingleArticleResponse(
+                article = Article(
+                    slug = "nullable-set-non-null-article-slug",
+                    title = newNullableSetNotNullArticleRequest.validatedNotNullArticle.validatedTitle,
+                    body = newNullableSetNotNullArticleRequest.validatedNotNullArticle.validatedBody,
+                    description = newNullableSetNotNullArticleRequest.validatedNotNullArticle.validatedDescription,
                 )
             ),
             HttpStatus.OK

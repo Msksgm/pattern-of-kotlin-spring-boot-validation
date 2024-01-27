@@ -38,3 +38,17 @@ style:
   #
   UnusedImports:
     active: true  # (default: false)
+# 潜在的なバグの検出
+potential-bugs:
+  active: true
+  #
+  # UnsafeCallOnNullableType
+  #
+  # 概要
+  # - null 許容型に対しての安全でない呼び出しを禁止する
+  UnsafeCallOnNullableType:
+    active: true
+    # 以下を除外対象に追加
+    # - "**/presentation/model/**"
+    #   - 理由: Validation のアノテーションで null チェックを実施し、セッターで `!!` を利用して non-null 型にするため。
+    excludes: ["**/presentation/model/**", '**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/androidUnitTest/**', '**/androidInstrumentedTest/**', '**/jsTest/**', '**/iosTest/**']
