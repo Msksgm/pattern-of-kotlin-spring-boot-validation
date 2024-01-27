@@ -2,6 +2,7 @@ package com.example.patternofkotlinspringbootvalidation.presentation
 
 import com.example.patternofkotlinspringbootvalidation.presentation.model.Article
 import com.example.patternofkotlinspringbootvalidation.presentation.model.NewNonNullArticleRequest
+import com.example.patternofkotlinspringbootvalidation.presentation.model.NewNullableArticleRequest
 import com.example.patternofkotlinspringbootvalidation.presentation.model.SingleArticleResponse
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
@@ -45,6 +46,46 @@ class PatternOfNullableNonnullController {
                     title = newNonNullArticleRequest.newNonNullArticle.title,
                     body = newNonNullArticleRequest.newNonNullArticle.body,
                     description = newNonNullArticleRequest.newNonNullArticle.description
+                )
+            ),
+            HttpStatus.OK
+        )
+    }
+
+    /**
+     * パターン 2 : null 許容型のモデルを受け取るエンドポイント
+     *
+     * メリット
+     * - null だったときのバリデーションエラーのレスポンスをわかりやすくできる
+     *
+     * デメリット
+     * - アノテーションの記述内容（`@NotNull`、`required = true`）とプロパティの型が一致しなくなる
+     * - コントローラに null 非許容型の知識が漏れる
+     * - not-null assertion operator（`!!`）をコントローラに書く必要があるので linter で `!!` を許容する設定が必要になる
+     *
+     */
+    @PostMapping(
+        value = ["/nullable-article-model"],
+        produces = [MediaType.APPLICATION_JSON_VALUE],
+        consumes = [MediaType.APPLICATION_JSON_VALUE],
+    )
+    // not-null assertion operator（`!!`）をコントローラに書く必要があるので linter で `!!` を許容する設定が必要になる
+    @Suppress("UnsafeCallOnNullableType")
+    fun nullableModel(
+        @Valid @RequestBody newNullableArticleRequest: NewNullableArticleRequest
+    ): ResponseEntity<SingleArticleResponse> {
+        // ユースケース層やアプリケーションサービス層に渡す前に、not-null assertion を実施する必要があり、アノテーションに対して null 非許容になっているのに冗長
+        val nonNullValidatedArticle = newNullableArticleRequest.article!!
+        val nonNullValidatedTitle = nonNullValidatedArticle.title!!
+        val nonNullValidatedBody = nonNullValidatedArticle.body!!
+        val nonNullValidatedDescription = nonNullValidatedArticle.description!!
+        return ResponseEntity(
+            SingleArticleResponse(
+                article = Article(
+                    slug = "non-null-article-slug",
+                    title = nonNullValidatedTitle,
+                    body = nonNullValidatedBody,
+                    description = nonNullValidatedDescription
                 )
             ),
             HttpStatus.OK
